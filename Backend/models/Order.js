@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
   usuario: {
@@ -38,15 +38,10 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  estado: {
-    type: String,
-    enum: ['procesando', 'completado', 'cancelado'],
-    default: 'procesando'
-  },
   fechaCompra: {
     type: Date,
     default: Date.now
   }
-})
+});
 
-module.exports = mongoose.model('Order', orderSchema)
+module.exports = mongoose.model('Order', orderSchema); 

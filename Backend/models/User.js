@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
-const crypto = require('crypto') // Para generar códigos de recuperación
+const crypto = require('crypto') // Para generar tokens de recuperación
 
 const userSchema = new mongoose.Schema({
   nombre: {
@@ -17,23 +17,22 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'La contraseña es obligatoria'],
-    minlength: [6, 'Debe tener al menos 6 caracteres']
+    minlength: [6, 'La contraseña debe tener al menos 6 caracteres']
   },
   rol: {
     type: String,
     enum: ['cliente', 'admin'],
     default: 'cliente'
   },
-  resetPasswordToken: String,       // Código de recuperación (hasheado)
-  resetPasswordExpire: Date         // Tiempo de expiración del código
+  resetPasswordToken: String, // Campo para el token de recuperación (ahora será el código hasheado)
+  resetPasswordExpire: Date // Campo para la fecha de expiración del token
 }, {
   timestamps: true
 })
 
-// 🔐 Encriptar contraseña antes de guardar
+// Encripta la contraseña antes de guardar
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
-
   try {
     const salt = await bcrypt.genSalt(10)
     this.password = await bcrypt.hash(this.password, salt)
@@ -43,22 +42,24 @@ userSchema.pre('save', async function (next) {
   }
 })
 
-// 🔍 Comparar contraseña ingresada vs guardada
+// Método para comparar contraseñas
 userSchema.methods.compararPassword = function (passwordIngresada) {
   return bcrypt.compare(passwordIngresada, this.password)
 }
 
-// 🔁 Generar código numérico para recuperación de contraseña
+// Método para generar un código de recuperación de contraseña (numérico)
 userSchema.methods.getResetPasswordCode = function () {
+  // Generar un código numérico de 6 dígitos
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString()
 
-  // Hash del código numérico
+  // Hashear el código y guardarlo en resetPasswordToken
+  // Usamos SHA256 para hashear el código, como se haría con una contraseña
   this.resetPasswordToken = crypto.createHash('sha256').update(resetCode).digest('hex')
 
-  // Código expira en 10 minutos
+  // Establecer expiración del código (ej. 10 minutos)
   this.resetPasswordExpire = Date.now() + 10 * 60 * 1000
 
-  return resetCode
+  return resetCode // Devolvemos el código sin hashear para enviarlo al usuario
 }
 
 module.exports = mongoose.model('User', userSchema)

@@ -7,7 +7,7 @@ const obtenerUsuarios = async (req, res) => {
     res.status(200).json(usuarios)
   } catch (err) {
     console.error('❌ Error al obtener usuarios:', err)
-    res.status(500).json({ message: 'Error al obtener la lista de usuarios.' })
+    res.status(500).json({ message: 'Error al obtener usuarios.' })
   }
 }
 
@@ -26,7 +26,6 @@ const eliminarUsuario = async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar usuario.' })
   }
 }
-
 // ─── Actualizar un usuario por ID ─────────────────────
 const actualizarUsuario = async (req, res) => {
   try {
@@ -38,12 +37,12 @@ const actualizarUsuario = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado.' })
     }
 
-    if (nombre) usuario.nombre = nombre.trim()
-    if (email) usuario.email = email.trim()
-    if (rol) usuario.rol = rol
+    usuario.nombre = nombre ?? usuario.nombre
+    usuario.email = email ?? usuario.email
+    usuario.rol    = rol ?? usuario.rol
 
     await usuario.save()
-    res.status(200).json({ message: 'Usuario actualizado correctamente.', usuario })
+    res.status(200).json({ message: 'Usuario actualizado correctamente.' })
   } catch (err) {
     console.error('❌ Error al actualizar usuario:', err)
     res.status(500).json({ message: 'Error al actualizar usuario.' })

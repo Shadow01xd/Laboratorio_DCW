@@ -2,9 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-const connectDB = require('./config/db')
-
-// Rutas
+const connectDB = require('./config/db') // mejor separar conexión
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
 const cartRoutes = require('./routes/cartRoutes')
@@ -14,37 +12,22 @@ const consultationRoutes = require('./routes/consultationRoutes')
 const technologyRoutes = require('./routes/technologyRoutes')
 const orderRoutes = require('./routes/orderRoutes')
 
-// Conectar a la BD
+// Conectar a MongoDB
 connectDB()
 
+// Inicializar app
 const app = express()
 
-// CORS con origen permitido (whitelist)
-const whitelist = [
-  'http://localhost:5173',
-  'https://laboratoriodcw.netlify.app',
-  'https://mielda.netlify.app'
-]
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true)
-    } else {
-      console.warn('❌ Origen bloqueado por CORS:', origin)
-      callback(new Error('No permitido por CORS'))
-    }
-  },
-  credentials: true
-}))
-
-// Middleware para JSON
+// Middlewares globales
+app.use(cors(
+  {origin: ["https://tilinazos.netlify.app", "http://localhost:5000"]}
+))
 app.use(express.json())
 
-// Servir archivos estáticos (por ejemplo imágenes subidas)
+// Servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// Rutas de la API
+// Rutas
 app.use('/api/auth', authRoutes)
 app.use('/api/usuarios', userRoutes)
 app.use('/api/carrito', cartRoutes)
@@ -54,27 +37,20 @@ app.use('/api/consultas', consultationRoutes)
 app.use('/api/tecnologias', technologyRoutes)
 app.use('/api/ordenes', orderRoutes)
 
-// Ruta raíz para test
-app.get('/', (req, res) => {
-  res.send('🌐 API de Laboratorio DCW funcionando correctamente')
-})
+// Ruta raíz
+app.get('/', (req, res) => res.send('🌐 API funcionando correctamente'))
 
-// Middleware global de errores
+// Manejo de errores
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).json({
     message: err.message || 'Error interno del servidor',
-    ...(process.env.NODE_ENV === 'development' && { error: err })
+    error: process.env.NODE_ENV === 'development' ? err : {}
   })
 })
 
-// Puerto
+// Servidor
 const PORT = process.env.PORT || 5000
-
 app.listen(PORT, () => {
-  const baseUrl = process.env.NODE_ENV === 'production'
-    ? 'https://laboratoriodcw-production.up.railway.app'
-    : `http://localhost:${PORT}`
-
-  console.log(`🚀 Servidor corriendo en ${baseUrl}`)
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`)
 })

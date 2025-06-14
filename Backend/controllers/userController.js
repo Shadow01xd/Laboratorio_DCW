@@ -6,7 +6,7 @@ const obtenerUsuarios = async (req, res) => {
     const usuarios = await User.find().select('-password')
     res.json(usuarios)
   } catch (err) {
-    console.error('❌ Error al obtener usuarios:', err.message)
+    console.error('Error al obtener usuarios:', err)
     res.status(500).json({ message: 'Error al obtener usuarios' })
   }
 }
@@ -20,7 +20,7 @@ const obtenerUsuarioPorId = async (req, res) => {
     }
     res.json(usuario)
   } catch (err) {
-    console.error('❌ Error al buscar usuario:', err.message)
+    console.error('Error al buscar usuario:', err)
     res.status(500).json({ message: 'Error al buscar usuario' })
   }
 }
@@ -48,7 +48,7 @@ const actualizarUsuario = async (req, res) => {
 
     res.json(usuarioActualizado)
   } catch (err) {
-    console.error('❌ Error al actualizar usuario:', err.message)
+    console.error('Error al actualizar usuario:', err)
     res.status(500).json({ message: 'Error al actualizar usuario' })
   }
 }
@@ -63,7 +63,7 @@ const eliminarUsuario = async (req, res) => {
 
     res.json({ message: 'Usuario eliminado correctamente' })
   } catch (err) {
-    console.error('❌ Error al eliminar usuario:', err.message)
+    console.error('Error al eliminar usuario:', err)
     res.status(500).json({ message: 'Error al eliminar usuario' })
   }
 }

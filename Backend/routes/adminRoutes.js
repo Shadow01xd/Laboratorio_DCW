@@ -4,32 +4,19 @@ const router = express.Router()
 const {
   obtenerUsuarios,
   eliminarUsuario,
-  actualizarUsuario
+  actualizarUsuario // ⬅️ Agregado
 } = require('../controllers/adminController')
 
-const {
-  verificarToken
-} = require('../middleware/authMiddleware')
+const { verificarToken } = require('../middleware/authMiddleware')
+const { verificarAdmin } = require('../middleware/verificarAdmin')
 
-const {
-  verificarAdmin
-} = require('../middleware/verificarAdmin')
-
-// -----------------------------
-// 🛡️ Rutas protegidas para ADMIN
-// -----------------------------
-
-// Middleware global: requiere token y rol admin
+// Aplicar middlewares de autenticación y autorización
 router.use(verificarToken)
 router.use(verificarAdmin)
 
-// Obtener todos los usuarios
+// Rutas protegidas
 router.get('/usuarios', obtenerUsuarios)
-
-// Eliminar un usuario
 router.delete('/usuarios/:id', eliminarUsuario)
-
-// Actualizar datos de un usuario
-router.put('/usuarios/:id', actualizarUsuario)
+router.put('/usuarios/:id', actualizarUsuario) // ⬅️ Agregado
 
 module.exports = router
