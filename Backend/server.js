@@ -19,20 +19,32 @@ connectDB()
 
 const app = express()
 
-// CORS con origen permitido
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173'
+// CORS con origen permitido (whitelist)
+const whitelist = [
+  'http://localhost:5173',
+  'https://laboratoriodcw.netlify.app',
+  'https://mielda.netlify.app'
+]
+
 app.use(cors({
-  origin: CLIENT_URL,
+  origin: (origin, callback) => {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true)
+    } else {
+      console.warn('❌ Origen bloqueado por CORS:', origin)
+      callback(new Error('No permitido por CORS'))
+    }
+  },
   credentials: true
 }))
 
 // Middleware para JSON
 app.use(express.json())
 
-// Servir archivos estáticos (para imágenes u otros)
+// Servir archivos estáticos (por ejemplo imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// Rutas API
+// Rutas de la API
 app.use('/api/auth', authRoutes)
 app.use('/api/usuarios', userRoutes)
 app.use('/api/carrito', cartRoutes)
@@ -42,7 +54,7 @@ app.use('/api/consultas', consultationRoutes)
 app.use('/api/tecnologias', technologyRoutes)
 app.use('/api/ordenes', orderRoutes)
 
-// Ruta raíz de test
+// Ruta raíz para test
 app.get('/', (req, res) => {
   res.send('🌐 API de Laboratorio DCW funcionando correctamente')
 })
@@ -56,7 +68,7 @@ app.use((err, req, res, next) => {
   })
 })
 
-// Puerto y arranque
+// Puerto
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
