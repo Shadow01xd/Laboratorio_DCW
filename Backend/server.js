@@ -20,7 +20,7 @@ const app = express()
 
 // Middlewares globales
 app.use(cors(
-  {origin: ["https://tilinazos.netlify.app", "http://localhost:5000"]}
+  {origin: ["https://labdcw.netlify.app", "http://localhost:5000"]}
 ))
 app.use(express.json())
 
