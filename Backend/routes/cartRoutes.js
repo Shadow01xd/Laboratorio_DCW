@@ -8,19 +8,23 @@ const {
   actualizarCantidad
 } = require('../controllers/cartController')
 
-// Todas las rutas requieren autenticación
+// ---------------------------
+// 🛒 Rutas de carrito de compras
+// ---------------------------
+
+// Requieren autenticación
 router.use(verificarToken)
 
-// Obtener carrito
+// Obtener el carrito del usuario actual
 router.get('/', obtenerCarrito)
 
-// Agregar servicio al carrito
+// Agregar un servicio al carrito
 router.post('/', agregarAlCarrito)
 
-// Eliminar servicio del carrito
+// Eliminar un servicio del carrito
 router.delete('/:servicioId', eliminarDelCarrito)
 
-// Actualizar cantidad
+// Actualizar cantidad de un servicio en el carrito
 router.put('/:servicioId', actualizarCantidad)
 
 module.exports = router

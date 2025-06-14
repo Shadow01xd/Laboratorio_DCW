@@ -4,7 +4,7 @@ const connectDB = async () => {
   const uri = process.env.MONGO_URI
 
   if (!uri) {
-    console.error('❌ MONGO_URI no está definida en .env')
+    console.error('❌ Error: MONGO_URI no está definida en el archivo .env')
     process.exit(1)
   }
 
@@ -13,9 +13,9 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true
     })
-    console.log('✅ Conectado a MongoDB Atlas')
+    console.log('✅ Conexión establecida con MongoDB Atlas')
   } catch (error) {
-    console.error('❌ Error al conectar MongoDB:', error.message)
+    console.error('❌ Error al conectar con MongoDB:', error)
     process.exit(1)
   }
 }

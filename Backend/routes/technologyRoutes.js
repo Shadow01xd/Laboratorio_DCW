@@ -1,44 +1,41 @@
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs'); // Importa el módulo fs
-const technologyController = require('../controllers/technologyController');
+const express = require('express')
+const router = express.Router()
+const multer = require('multer')
+const path = require('path')
+const fs = require('fs')
+const technologyController = require('../controllers/technologyController')
 
-// Directorio de destino para las imágenes de tecnología
-const uploadDir = path.join(__dirname, '..', 'uploads', 'technologies');
-
-// Asegurarse de que el directorio de subida exista
+// 🔧 Directorio de destino
+const uploadDir = path.join(__dirname, '..', 'uploads', 'technologies')
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  fs.mkdirSync(uploadDir, { recursive: true })
 }
 
-// Configuración de multer para subida de imágenes
+// 🎯 Configuración de multer
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    const fileName = Date.now() + '-' + file.originalname.replace(/\s+/g, '_')
+    cb(null, fileName)
+  }
+})
 
-const upload = multer({ 
-    storage: storage,
-    fileFilter: function (req, file, cb) {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Solo se permiten imágenes'));
-        }
-    }
-});
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) cb(null, true)
+  else cb(new Error('Solo se permiten archivos de imagen'))
+}
 
-// Rutas para tecnologías
-router.get('/', technologyController.getAllTechnologies);
-router.get('/:id', technologyController.getTechnologyById);
-router.post('/', upload.single('image'), technologyController.createTechnology);
-router.put('/:id', upload.single('image'), technologyController.updateTechnology);
-router.delete('/:id', technologyController.deleteTechnology);
+const upload = multer({ storage, fileFilter })
 
-module.exports = router; 
+// --------------------------
+// 🧠 Rutas API tecnologías
+// --------------------------
+
+router.get('/', technologyController.getAllTechnologies)
+router.get('/:id', technologyController.getTechnologyById)
+router.post('/', upload.single('image'), technologyController.createTechnology)
+router.put('/:id', upload.single('image'), technologyController.updateTechnology)
+router.delete('/:id', technologyController.deleteTechnology)
+
+module.exports = router

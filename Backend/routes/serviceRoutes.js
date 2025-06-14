@@ -13,51 +13,55 @@ const {
 const { verificarToken } = require('../middleware/authMiddleware')
 const { verificarAdmin } = require('../middleware/verificarAdmin')
 
-// Asegurar que el directorio de uploads existe
+// ----------------------------
+// 🗂 Crear carpeta si no existe
+// ----------------------------
 const uploadDir = path.join(__dirname, '..', 'uploads', 'servicios')
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true })
 }
 
-// Configuración de multer para subir imágenes
+// ----------------------------
+// 📷 Configuración de Multer
+// ----------------------------
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir)
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, uniqueSuffix + path.extname(file.originalname))
+  destination: (_, __, cb) => cb(null, uploadDir),
+  filename: (_, file, cb) => {
+    const cleanName = file.originalname.replace(/\s+/g, '_')
+    const uniqueName = `${Date.now()}-${cleanName}`
+    cb(null, uniqueName)
   }
 })
+
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase()
+  const allowed = ['.jpg', '.jpeg', '.png', '.gif']
+  if (allowed.includes(ext)) cb(null, true)
+  else cb(new Error('Solo se permiten imágenes (jpg, jpeg, png, gif)'))
+}
 
 const upload = multer({
-  storage: storage,
-  fileFilter: function (req, file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/
-    const mimetype = filetypes.test(file.mimetype)
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase())
-
-    if (mimetype && extname) {
-      return cb(null, true)
-    }
-    cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, gif)'))
-  },
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
-  }
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 })
 
-// Aplicar middleware de autenticación a todas las rutas
+// ----------------------------
+// 🛡️ Rutas protegidas
+// ----------------------------
+
+// Requiere usuario autenticado
 router.use(verificarToken)
 
-// Rutas públicas (solo requieren autenticación)
+// Acceso para todos los autenticados
 router.get('/', obtenerServicios)
 router.get('/:id', obtenerServicio)
 
-// Rutas protegidas (requieren rol de admin)
+// Acceso solo para admin
 router.use(verificarAdmin)
+
 router.post('/', upload.single('imagen'), crearServicio)
 router.put('/:id', upload.single('imagen'), actualizarServicio)
 router.delete('/:id', eliminarServicio)
 
-module.exports = router 
+module.exports = router

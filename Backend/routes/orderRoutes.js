@@ -1,18 +1,18 @@
-const express = require('express');
-const router = express.Router();
-const orderController = require('../controllers/orderController');
-const authMiddleware = require('../middleware/authMiddleware');
+const express = require('express')
+const router = express.Router()
+const orderController = require('../controllers/orderController')
+const { verificarToken } = require('../middleware/authMiddleware')
 
-// Aplicar middleware de autenticación a todas las rutas
-router.use(authMiddleware.verificarToken);
+// ---------------------------
+// 🔐 Middleware de autenticación
+// ---------------------------
+router.use(verificarToken)
 
-// Crear una nueva orden
-router.post('/', orderController.createOrder);
+// ---------------------------
+// 🧾 Rutas de órdenes del usuario
+// ---------------------------
+router.post('/', orderController.createOrder)           // Crear nueva orden
+router.get('/', orderController.getUserOrders)          // Obtener todas las órdenes del usuario
+router.get('/:id', orderController.getOrderById)        // Obtener detalle de una orden
 
-// Obtener todas las órdenes del usuario
-router.get('/', orderController.getUserOrders);
-
-// Obtener una orden específica
-router.get('/:id', orderController.getOrderById);
-
-module.exports = router; 
+module.exports = router

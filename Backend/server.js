@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
-const connectDB = require('./config/db') // mejor separar conexión
+const connectDB = require('./config/db')
 
 // Rutas
 const authRoutes = require('./routes/authRoutes')
@@ -14,20 +14,25 @@ const consultationRoutes = require('./routes/consultationRoutes')
 const technologyRoutes = require('./routes/technologyRoutes')
 const orderRoutes = require('./routes/orderRoutes')
 
-// Conectar a MongoDB
+// Conectar a la BD
 connectDB()
 
-// Inicializar app
 const app = express()
 
-// Middlewares globales
-app.use(cors())
+// CORS con origen permitido
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173'
+app.use(cors({
+  origin: CLIENT_URL,
+  credentials: true
+}))
+
+// Middleware para JSON
 app.use(express.json())
 
-// Servir archivos estáticos (por si subes imágenes, etc.)
+// Servir archivos estáticos (para imágenes u otros)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
-// Endpoints de API
+// Rutas API
 app.use('/api/auth', authRoutes)
 app.use('/api/usuarios', userRoutes)
 app.use('/api/carrito', cartRoutes)
@@ -37,28 +42,27 @@ app.use('/api/consultas', consultationRoutes)
 app.use('/api/tecnologias', technologyRoutes)
 app.use('/api/ordenes', orderRoutes)
 
-// Ruta raíz para probar conexión
-app.get('/', (req, res) => res.send('🌐 API funcionando correctamente'))
+// Ruta raíz de test
+app.get('/', (req, res) => {
+  res.send('🌐 API de Laboratorio DCW funcionando correctamente')
+})
 
-// Manejo global de errores
+// Middleware global de errores
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).json({
     message: err.message || 'Error interno del servidor',
-    error: process.env.NODE_ENV === 'development' ? err : {}
+    ...(process.env.NODE_ENV === 'development' && { error: err })
   })
 })
 
-// ---------------------------
-// 🚀 LEVANTAR SERVIDOR
-// ---------------------------
+// Puerto y arranque
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
-  const baseUrl =
-    process.env.NODE_ENV === 'production'
-      ? 'https://laboratorio-dcw-production.up.railway.app' // 👈 cámbialo por tu URL real
-      : `http://localhost:${PORT}`
+  const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://laboratoriodcw-production.up.railway.app'
+    : `http://localhost:${PORT}`
 
   console.log(`🚀 Servidor corriendo en ${baseUrl}`)
 })

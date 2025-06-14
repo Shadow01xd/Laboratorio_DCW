@@ -5,10 +5,10 @@ const path = require('path')
 // Obtener todos los servicios
 const obtenerServicios = async (req, res) => {
   try {
-    const servicios = await Service.find()
+    const servicios = await Service.find().sort({ createdAt: -1 })
     res.json(servicios)
   } catch (err) {
-    console.error('Error al obtener servicios:', err)
+    console.error('❌ Error al obtener servicios:', err.message)
     res.status(500).json({ message: 'Error al obtener servicios' })
   }
 }
@@ -22,7 +22,7 @@ const obtenerServicio = async (req, res) => {
     }
     res.json(servicio)
   } catch (err) {
-    console.error('Error al obtener servicio:', err)
+    console.error('❌ Error al obtener servicio:', err.message)
     res.status(500).json({ message: 'Error al obtener servicio' })
   }
 }
@@ -47,7 +47,7 @@ const crearServicio = async (req, res) => {
 
     res.status(201).json(servicio)
   } catch (err) {
-    console.error('Error al crear servicio:', err)
+    console.error('❌ Error al crear servicio:', err.message)
     res.status(500).json({ message: 'Error al crear servicio' })
   }
 }
@@ -59,14 +59,13 @@ const actualizarServicio = async (req, res) => {
     const actualizacion = { nombre, descripcion, costo, categoria, activo }
 
     if (req.file) {
-      // Eliminar imagen anterior
       const servicioAnterior = await Service.findById(req.params.id)
       if (servicioAnterior?.imagen) {
-        const rutaImagenAnterior = path.join(__dirname, '..', servicioAnterior.imagen)
+        const rutaAnterior = path.join(__dirname, '..', servicioAnterior.imagen)
         try {
-          await fs.unlink(rutaImagenAnterior)
+          await fs.unlink(rutaAnterior)
         } catch (err) {
-          console.error('Error al eliminar imagen anterior:', err)
+          console.warn('⚠️ No se pudo eliminar la imagen anterior:', err.message)
         }
       }
       actualizacion.imagen = `/uploads/servicios/${req.file.filename}`
@@ -84,7 +83,7 @@ const actualizarServicio = async (req, res) => {
 
     res.json(servicio)
   } catch (err) {
-    console.error('Error al actualizar servicio:', err)
+    console.error('❌ Error al actualizar servicio:', err.message)
     res.status(500).json({ message: 'Error al actualizar servicio' })
   }
 }
@@ -93,25 +92,23 @@ const actualizarServicio = async (req, res) => {
 const eliminarServicio = async (req, res) => {
   try {
     const servicio = await Service.findById(req.params.id)
-    
     if (!servicio) {
       return res.status(404).json({ message: 'Servicio no encontrado' })
     }
 
-    // Eliminar imagen
     if (servicio.imagen) {
       const rutaImagen = path.join(__dirname, '..', servicio.imagen)
       try {
         await fs.unlink(rutaImagen)
       } catch (err) {
-        console.error('Error al eliminar imagen:', err)
+        console.warn('⚠️ No se pudo eliminar imagen:', err.message)
       }
     }
 
     await servicio.deleteOne()
     res.json({ message: 'Servicio eliminado correctamente' })
   } catch (err) {
-    console.error('Error al eliminar servicio:', err)
+    console.error('❌ Error al eliminar servicio:', err.message)
     res.status(500).json({ message: 'Error al eliminar servicio' })
   }
 }
@@ -122,4 +119,4 @@ module.exports = {
   crearServicio,
   actualizarServicio,
   eliminarServicio
-} 
+}
